@@ -5,7 +5,7 @@ const Payment = require('../models/Payment');
 
 const createLimiter = rateLimit({ windowMs: 60 * 1000, max: 10 });
 const INVOICE_TTL_MINUTES = 30;
-
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function withUniqueOffset(amount) {
   const microAmount = Math.round(amount * 1e6);
@@ -15,9 +15,16 @@ function withUniqueOffset(amount) {
 
 router.post('/create', createLimiter, async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, payerName, payerEmail } = req.body;
+
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       return res.status(400).json({ error: 'Invalid amount.' });
+    }
+    if (!payerName || typeof payerName !== 'string' || !payerName.trim()) {
+      return res.status(400).json({ error: 'Name is required.' });
+    }
+    if (!payerEmail || typeof payerEmail !== 'string' || !EMAIL_REGEX.test(payerEmail.trim())) {
+      return res.status(400).json({ error: 'A valid email is required.' });
     }
     if (!process.env.CLIENT_MASTER_ADDRESS) {
       return res.status(500).json({ error: 'Admin deposit address not configured.' });
@@ -40,6 +47,8 @@ router.post('/create', createLimiter, async (req, res) => {
       depositAddress: process.env.CLIENT_MASTER_ADDRESS,
       expectedAmount,
       requestedAmount: amount,
+      payerName: payerName.trim(),
+      payerEmail: payerEmail.trim(),
       expiresAt: new Date(Date.now() + INVOICE_TTL_MINUTES * 60 * 1000),
     });
 

@@ -8,6 +8,8 @@ const paymentSchema = new mongoose.Schema({
   expiresAt: { type: Date, required: true },
   incomingTxId: { type: String },
   fromAddress: { type: String },
+  payerName: { type: String, required: true },
+  payerEmail: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
