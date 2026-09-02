@@ -16,6 +16,9 @@ const userRoutes = require('./routes/users');
 const { startListener } = require('./services/tronListener');
 
 const app = express();
+
+// Render sits behind a reverse proxy — trust its forwarded headers so
+// secure-cookie detection and IP-based rate limiting behave correctly.
 app.set('trust proxy', 1);
 
 app.use(helmet());
@@ -24,7 +27,7 @@ const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').map(s => s.tr
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
