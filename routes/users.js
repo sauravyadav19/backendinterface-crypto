@@ -14,7 +14,6 @@ function toPublicUser(user) {
     id: user._id,
     name: user.name,
     email: user.email,
-    phone: user.phone,
     walletBalance: user.walletBalance,
     createdAt: user.createdAt,
   };
@@ -22,12 +21,11 @@ function toPublicUser(user) {
 
 router.post('/signup', authLimiter, async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required.' });
     if (!email || !EMAIL_REGEX.test(email.trim())) return res.status(400).json({ error: 'A valid email is required.' });
     if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-    if (!phone || !phone.trim()) return res.status(400).json({ error: 'Phone number is required.' });
 
     const existing = await User.findOne({ email: email.trim().toLowerCase() });
     if (existing) return res.status(409).json({ error: 'An account with this email already exists.' });
@@ -38,7 +36,6 @@ router.post('/signup', authLimiter, async (req, res) => {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       passwordHash,
-      phone: phone.trim(),
       walletBalance: 0,
     });
     await user.save();

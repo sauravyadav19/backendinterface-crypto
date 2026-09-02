@@ -50,7 +50,6 @@ router.get('/users', async (req, res) => {
     id: u._id,
     name: u.name,
     email: u.email,
-    phone: u.phone,
     walletBalance: u.walletBalance,
     createdAt: u.createdAt,
   })));
