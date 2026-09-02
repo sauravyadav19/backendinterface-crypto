@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
 const Request = require('../models/Request');
+const User = require('../models/User');
 const requireAuth = require('../middleware/authMiddleware');
 
 router.use(requireAuth);
@@ -15,7 +16,6 @@ router.get('/requests', async (req, res) => {
   const requests = await Request.find().sort({ createdAt: -1 });
   res.json(requests);
 });
-
 
 router.post('/requests/:id/settle', async (req, res) => {
   try {
@@ -40,6 +40,37 @@ router.post('/requests/:id/settle', async (req, res) => {
   } catch (err) {
     console.error('Settle failed:', err);
     res.status(500).json({ error: 'Failed to update request' });
+  }
+});
+
+router.get('/users', async (req, res) => {
+  const users = await User.find().sort({ createdAt: -1 });
+  res.json(users.map((u) => ({
+    id: u._id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    walletBalance: u.walletBalance,
+    createdAt: u.createdAt,
+  })));
+});
+
+router.patch('/users/:id/balance', async (req, res) => {
+  try {
+    const { walletBalance } = req.body;
+    if (typeof walletBalance !== 'number' || !Number.isFinite(walletBalance) || walletBalance < 0) {
+      return res.status(400).json({ error: 'walletBalance must be a non-negative number.' });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { walletBalance } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    res.json({ id: user._id, walletBalance: user.walletBalance });
+  } catch (err) {
+    console.error('Balance update failed:', err);
+    res.status(500).json({ error: 'Failed to update balance.' });
   }
 });
 

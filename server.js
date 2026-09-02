@@ -12,6 +12,7 @@ const paymentRoutes = require('./routes/payments');
 const requestRoutes = require('./routes/requests');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/users');
 const { startListener } = require('./services/tronListener');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
